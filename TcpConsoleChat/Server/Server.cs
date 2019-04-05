@@ -39,7 +39,7 @@ namespace Server
             return new FileData() { ID = 0};
         }
         
-        public static void ConnectUser(User user)
+        public static void NewUser(User user)
         {
             if (UserList.Contains(user))
                 return;
@@ -47,12 +47,12 @@ namespace Server
             UserConnected(user.Username);
         }
         
-        public static void DisconnectUser(User user)
+        public static void EndUser(User user)
         {
             if (!UserList.Contains(user))
                 return;
             UserList.Remove(user);
-            user.Disconnect();
+            user.End();
             UserDisconnected(user.Username);
 
         }
@@ -83,7 +83,7 @@ namespace Server
         {
             foreach (var user in UserList)
             {
-                user.SendMessage(content);
+                user.SendMessage(content, clr);
             }
         }
         
