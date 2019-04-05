@@ -46,9 +46,17 @@ namespace Server
             return true;
         }
 
-        private void IdentifyCommand()
+        private TypeOfCommand IdentifyCommand(string currentCommand)
         {
+            if (string.IsNullOrEmpty(currentCommand)) return TypeOfCommand.Empty;
+            if (!_authSuccess) return TypeOfCommand.SetName;
+            if (currentCommand.Contains("getfile")) return TypeOfCommand.GetFile;
+            if (currentCommand.Contains("message")) return TypeOfCommand.SendGlobalMessage;
+            if (currentCommand.Contains("endsession")) return TypeOfCommand.EndSession;
+            if (currentCommand.Contains("sendfileto")) return TypeOfCommand.SendFileTo;
+            if (currentCommand.Contains("private")) return TypeOfCommand.PrivateMessage;
             
+            throw new Exception("Invalid command.");
         }
         
         private void HandleCommand(string cmd)
@@ -60,6 +68,23 @@ namespace Server
                 for (int i = 0; i < countCommands; i++)
                 {
                     string currentCommand = commands[i];
+                    switch (IdentifyCommand(currentCommand))
+                    {
+                        case TypeOfCommand.Empty:
+                            break;
+                        case TypeOfCommand.SetName:
+                            break;
+                        case TypeOfCommand.GetFile:
+                            break;
+                        case TypeOfCommand.SendGlobalMessage:
+                            break;
+                        case TypeOfCommand.EndSession:
+                            break;
+                        case TypeOfCommand.SendFileTo:
+                            break;
+                        case TypeOfCommand.PrivateMessage:
+                            break;
+                    }
                     if (string.IsNullOrEmpty(currentCommand))
                         continue;
                     if (!_authSuccess)
