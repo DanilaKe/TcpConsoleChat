@@ -45,19 +45,6 @@ namespace Server
             _authSuccess = true;
             return true;
         }
-
-        private TypeOfCommand IdentifyCommand(string currentCommand)
-        {
-            if (string.IsNullOrEmpty(currentCommand)) return TypeOfCommand.Empty;
-            if (!_authSuccess) return TypeOfCommand.SetName;
-            if (currentCommand.Contains("getfile")) return TypeOfCommand.GetFile;
-            if (currentCommand.Contains("message")) return TypeOfCommand.SendGlobalMessage;
-            if (currentCommand.Contains("endsession")) return TypeOfCommand.EndSession;
-            if (currentCommand.Contains("sendfileto")) return TypeOfCommand.SendFileTo;
-            if (currentCommand.Contains("private")) return TypeOfCommand.PrivateMessage;
-            
-            throw new Exception("Invalid command.");
-        }
         
         private void HandleCommand(string cmd)
         {
@@ -73,8 +60,10 @@ namespace Server
                         case TypeOfCommand.Empty:
                             break;
                         case TypeOfCommand.SetName:
+                            SetNameCommand(currentCommand);
                             break;
                         case TypeOfCommand.GetFile:
+                            GetFileCommand(currentCommand);
                             break;
                         case TypeOfCommand.SendGlobalMessage:
                             break;
@@ -89,10 +78,7 @@ namespace Server
                         continue;
                     if (!_authSuccess)
                     {
-                        if (currentCommand.Contains("setname"))
-                        {
-                            Send(SetName(currentCommand.Split('|')[1]) ? "#setnamesuccess" : "#setnamefailed");
-                        }
+                        
 
                         continue;
                     }
@@ -178,6 +164,41 @@ namespace Server
             }
         }
         
+        private TypeOfCommand IdentifyCommand(string currentCommand)
+        {
+            if (string.IsNullOrEmpty(currentCommand)) return TypeOfCommand.Empty;
+            if (!_authSuccess) return TypeOfCommand.SetName;
+            if (currentCommand.Contains("getfile")) return TypeOfCommand.GetFile;
+            if (currentCommand.Contains("message")) return TypeOfCommand.SendGlobalMessage;
+            if (currentCommand.Contains("endsession")) return TypeOfCommand.EndSession;
+            if (currentCommand.Contains("sendfileto")) return TypeOfCommand.SendFileTo;
+            if (currentCommand.Contains("private")) return TypeOfCommand.PrivateMessage;
+            
+            throw new Exception("Invalid command.");
+        }
+
+        private void SetNameCommand(string currentCommand)
+        {
+            if (currentCommand.Contains("setname"))
+            {
+                Send(SetName(currentCommand.Split('|')[1]) ? "#setnamesuccess" : "#setnamefailed");
+            }
+        }
+
+        private void GetFileCommand(string currentCommand)
+        {
+            string id = currentCommand.Split('|')[1];
+            FileData file = Server.GetFileByID(int.Parse(id));
+            if (file.ID == 0)
+            {
+                SendMessage("Ошибка при передаче файла...", "1");
+                return;
+            }
+
+            Send(file.fileBuffer);
+            Server.Files.Remove(file);
+        }
+        
         public void SendFile(FileData fd, User To)
         {
             byte[] answerBuffer = new byte[48];
@@ -199,6 +220,7 @@ namespace Server
         {
             _userHandle.Send(Encoding.Unicode.GetBytes(Buffer));
         }
+        
         public void End()
         {
             _userHandle.Close();
