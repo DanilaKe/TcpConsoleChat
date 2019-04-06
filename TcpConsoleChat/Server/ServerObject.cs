@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Net;
@@ -51,15 +52,12 @@ namespace ChatServer
         }
  
         // трансляция сообщения подключенным клиентам
-        protected internal void BroadcastMessage(string message, string id)
+        protected internal void BroadcastMessage(string message)
         {
             byte[] data = Encoding.Unicode.GetBytes(message);
             for (int i = 0; i < clients.Count; i++)
             {
-                if (clients[i].Id!= id) // если id клиента не равно id отправляющего
-                {
-                    clients[i].Stream.Write(data, 0, data.Length); //передача данных
-                }
+                clients[i].Stream.Write(data, 0, data.Length); //передача данных
             }
         }
 
@@ -71,6 +69,23 @@ namespace ChatServer
                 if (client.UserName == receiver)
                 {
                     client.Stream.Write(data, 0, data.Length);
+                    Thread.Sleep(1000);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        
+        protected internal bool SendMessageToId(string message, string Id)
+        {
+            byte[] data = Encoding.Unicode.GetBytes(message);
+            foreach (var client in clients)
+            {
+                if (client.Id == Id)
+                {
+                    client.Stream.Write(data, 0, data.Length);
+                    Thread.Sleep(1000);
                     return true;
                 }
             }
@@ -88,6 +103,31 @@ namespace ChatServer
                 clients[i].Close(); //отключение клиента
             }
             Environment.Exit(0); //завершение процесса
+        }
+        
+        protected internal bool IsValidUsername(string username)
+        {
+            foreach (var client in clients)
+            {
+                if (client.UserName == username)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        protected internal void BroadcastUserlist()
+        {
+            var message = new StringBuilder("userlist|");
+            foreach (var client in clients)
+            {
+                message.Append(client.UserName + "/");
+            }
+
+            message.Append("|");
+            BroadcastMessage(message.ToString());
         }
     }
 }

@@ -2,7 +2,8 @@ using System;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
- 
+using System.Threading;
+
 namespace ChatServer
 {
     public class ClientObject
@@ -29,11 +30,18 @@ namespace ChatServer
                 Stream = client.GetStream();
                 // получаем имя пользователя
                 string message = GetMessage();
+                while (!server.IsValidUsername(message))
+                {
+                    server.SendMessageToId("invalidlogin|", Id);
+                    message = GetMessage();
+                }
                 userName = message;
- 
-                message = $"{userName} вошел в чат";
+                server.SendMessageTo("successeslogin|", UserName);
+                server.BroadcastUserlist();
+                
+                message = $"msg|{userName} вошел в чат|";
                 // посылаем сообщение о входе в чат всем подключенным пользователям
-                server.BroadcastMessage(message, this.Id);
+                server.BroadcastMessage(message);
                 Console.WriteLine(message);
                 // в бесконечном цикле получаем сообщения от клиента
                 while (true)
@@ -45,25 +53,25 @@ namespace ChatServer
                         {
                             var receiver = new string(message.Skip(1).TakeWhile(x =>  x != ' ').ToArray());
                             message = new string(message.Skip(receiver.Length + 1).ToArray());
-                            message = $"[{userName}] -> [{receiver}] :{message}";
+                            message = $"msg|[{userName}] -> [{receiver}] :{message}|";
                             Console.WriteLine(message);
                             if (!server.SendMessageTo(message, receiver))
                             {
-                                server.SendMessageTo(" Пользователь не найден. ", userName);
+                                server.SendMessageTo("msg| Пользователь не найден.|", userName);
                             }
                         }
                         else
                         {
-                            message = $"{userName}: {message}";
+                            message = $"msg|{userName}: {message}|";
                             Console.WriteLine(message);
-                            server.BroadcastMessage(message, this.Id);                           
+                            server.BroadcastMessage(message);                           
                         }
                     }
                     catch
                     {
-                        message = String.Format("{0}: покинул чат", userName);
+                        message = String.Format("msg|{0}: покинул чат|", userName);
                         Console.WriteLine(message);
-                        server.BroadcastMessage(message, this.Id);
+                        server.BroadcastMessage(message);
                         break;
                     }
                 }
