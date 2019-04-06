@@ -64,7 +64,7 @@ namespace Server
                             break;
                         case TypeOfCommand.GetFile:
                             GetFileCommand(currentCommand);
-                            break;
+                            break;    
                         case TypeOfCommand.SendGlobalMessage:
                             break;
                         case TypeOfCommand.EndSession:
