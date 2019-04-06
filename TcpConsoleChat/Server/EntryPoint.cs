@@ -1,28 +1,25 @@
 using System;
-using System.Net;
-using System.Net.Sockets;
-
-namespace Server
+using System.Threading;
+ 
+namespace ChatServer
 {
     class EntryPoint
     {
+        static ServerObject server; // сервер
+        static Thread listenThread; // потока для прослушивания
         static void Main(string[] args)
         {
-            IPAddress address = IPAddress.Parse(Server.Host);
-            Server.ServerSocket = new Socket(address.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-            Server.ServerSocket.Bind(new IPEndPoint(address, Server.Port));
-            Server.ServerSocket.Listen(100);
-            Console.WriteLine($"Server has been started on {Server.Host}:{Server.Port}");
-            Console.WriteLine("Waiting connections...");
-            while(Server.Work)
+            try
             {
-                Socket handle = Server.ServerSocket.Accept();
-                Console.WriteLine($"New connection: {handle.RemoteEndPoint.ToString()}");
-                new User(handle);
-
+                server = new ServerObject();
+                listenThread = new Thread(new ThreadStart(server.Listen));
+                listenThread.Start(); //старт потока
             }
-            Console.WriteLine("Server closeing...");
-
+            catch (Exception ex)
+            {
+                server.Disconnect();
+                Console.WriteLine(ex.Message);
+            }
         }
     }
 }
