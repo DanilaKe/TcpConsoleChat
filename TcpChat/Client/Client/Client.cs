@@ -3,7 +3,6 @@ using System.Threading;
 using System.Net.Sockets;
 using System.Text;
 using System.Windows.Forms;
-using System.Windows.Forms.VisualStyles;
 
 namespace Client
 {
@@ -95,11 +94,15 @@ namespace Client
             {
                 if (!IsConnected)
                 {
-                    IsConnected = !IsConnected;
-                    IpAddress.Enabled = !IpAddress.Enabled;
-                    Port.Enabled = !Port.Enabled;
                     client.Connect(IpAddress.Text, int.Parse(Port.Text)); //подключение клиента
                     stream = client.GetStream(); // получаем поток
+                    IsConnected = !IsConnected;
+                    Invoke((MethodInvoker)delegate
+                    {
+                        PrintMessage($"Подключенно к серверу {IpAddress.Text}:{Port.Text}");
+                        IpAddress.Enabled = !IpAddress.Enabled;
+                        Port.Enabled = !Port.Enabled;
+                    });
        
                     // запускаем новый поток для получения данных
                     Thread receiveThread = new Thread(new ThreadStart(ReceiveMessage));
@@ -109,7 +112,7 @@ namespace Client
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                MessageBox.Show(ex.Message);
             }
         }
 
@@ -153,7 +156,6 @@ namespace Client
 
         private void SuccessfulLogin()
         {
-            IsConnected = !IsConnected;
             Invoke((MethodInvoker)delegate
             {
                 PrintMessage($"Добро пожаловать");
