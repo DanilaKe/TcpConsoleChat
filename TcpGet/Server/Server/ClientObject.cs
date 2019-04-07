@@ -8,10 +8,8 @@ namespace TcpGet
 {
     public class ClientObject
     {
-        public string UserName => userName;
         protected internal string Id { get; private set; }
         protected internal NetworkStream Stream { get; private set; }
-        string userName;
         TcpClient client;
         ServerObject server; // объект сервера
 
@@ -98,7 +96,7 @@ namespace TcpGet
         public void SendFile(FileData fd, string Id)
         {
             byte[] answerBuffer = new byte[48];
-            Console.WriteLine($"Sending {fd.FileName} from {fd.From} to {userName}");
+            Console.WriteLine($"Sending {fd.FileName} from {fd.From} to {Id}");
             server.SendMessageToId($"#gfile|{fd.FileName}|{fd.From}|{fd.fileBuffer.Length}|{fd.ID}", Id);
         }
 
