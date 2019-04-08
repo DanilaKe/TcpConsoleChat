@@ -13,6 +13,13 @@ namespace TcpGet
         public static List<FileData> Files = new List<FileData>();
         static TcpListener tcpListener; // сервер для прослушивания
         List<ClientObject> clients = new List<ClientObject>(); // все подключения
+        private int _port;
+        public event Action<string> ServerMessage;
+
+        public ServerObject(int port)
+        {
+            _port = port;
+        }
 
         protected internal void AddConnection(ClientObject clientObject)
         {
@@ -31,9 +38,9 @@ namespace TcpGet
         {
             try
             {
-                tcpListener = new TcpListener(IPAddress.Any, 8888);
+                tcpListener = new TcpListener(IPAddress.Any, _port);
                 tcpListener.Start();
-                Console.WriteLine("Сервер запущен. Ожидание подключений...");
+                PrintMessage("Сервер запущен. Ожидание подключений...");
 
                 while (true)
                 {
@@ -46,7 +53,7 @@ namespace TcpGet
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                PrintMessage(ex.Message);
                 Disconnect();
             }
         }
@@ -87,6 +94,11 @@ namespace TcpGet
             }
 
             return false;
+        }
+
+        protected internal void PrintMessage(string message)
+        {
+            ServerMessage(message);
         }
     }
 }   

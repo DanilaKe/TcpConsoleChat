@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Windows.Forms;
 
-namespace ChatServer
+namespace TcpGet
 {
     public partial class ServerForm : Form
     {
@@ -22,7 +22,7 @@ namespace ChatServer
             try
             {
                 var _port = Convert.ToInt32(Port.Text);
-                if (_port < 1 || _port > 9999)
+                if (_port < 1 || _port > 999999)
                 {
                     throw new Exception();
                 }
@@ -65,7 +65,7 @@ namespace ChatServer
             if (InvokeRequired)
             {
                 Invoke(_addMessage, message);
-                return;    
+                return;
             }
             LogText.SelectionStart = LogText.TextLength;
             LogText.SelectionLength = message.Length;

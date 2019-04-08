@@ -26,6 +26,7 @@ namespace TcpGet
             try
             {
                 Stream = client.GetStream();
+                server.PrintMessage(Id + "подключен.");
                 // в бесконечном цикле получаем сообщения от клиента
                 while (true)
                 {
@@ -67,7 +68,7 @@ namespace TcpGet
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                server.PrintMessage(e.Message);
             }
             finally
             {
@@ -96,7 +97,7 @@ namespace TcpGet
         public void SendFile(FileData fd, string Id)
         {
             byte[] answerBuffer = new byte[48];
-            Console.WriteLine($"Sending {fd.FileName} from {fd.From} to {Id}");
+            server.PrintMessage($"Sending {fd.FileName} from {fd.From} to {Id}");
             server.SendMessageToId($"#gfile|{fd.FileName}|{fd.From}|{fd.fileBuffer.Length}|{fd.ID}", Id);
         }
 
