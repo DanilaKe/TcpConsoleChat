@@ -42,7 +42,7 @@ namespace ChatServer
                 message = $"msg|{userName} вошел в чат|";
                 // посылаем сообщение о входе в чат всем подключенным пользователям
                 server.BroadcastMessage(message);
-                Console.WriteLine(message);
+                server.PrintMessage(message);
                 // в бесконечном цикле получаем сообщения от клиента
                 while (true)
                 {
@@ -54,7 +54,7 @@ namespace ChatServer
                             var receiver = new string(message.Skip(1).TakeWhile(x =>  x != ' ').ToArray());
                             message = new string(message.Skip(receiver.Length + 1).ToArray());
                             message = $"msg|[{userName}] -> [{receiver}] :{message}|";
-                            Console.WriteLine(message);
+                            server.PrintMessage(message);
                             server.SendMessageTo(message, userName);
                             if (!server.SendMessageTo(message, receiver))
                             {
@@ -69,14 +69,14 @@ namespace ChatServer
                         else
                         {
                             message = $"msg|{userName}: {message}|";
-                            Console.WriteLine(message);
+                            server.PrintMessage(message);
                             server.BroadcastMessage(message);
                         }
                     }
                     catch
                     {
                         message = String.Format("msg|{0}: покинул чат|", userName);
-                        Console.WriteLine(message);
+                        server.PrintMessage(message);
                         server.BroadcastMessage(message);
                         break;
                     }
@@ -84,7 +84,7 @@ namespace ChatServer
             }
             catch(Exception e)
             {
-                Console.WriteLine(e.Message);
+                server.PrintMessage(e.Message);
             }
             finally
             {

@@ -14,6 +14,57 @@ namespace Client
         private ChatEvent _addMessage;
         static TcpClient client;
         static NetworkStream stream;
+        
+        public ClientForm()
+        {
+            InitializeComponent();
+            _addMessage = new ChatEvent(PrintMessage);
+            ChatBox.Enabled = true;
+            UserBox.Enabled = false;
+            SendButton.Enabled = false;
+            Message.Enabled = false;
+            client = new TcpClient();
+            UserMenu = new ContextMenuStrip();
+            ToolStripMenuItem PrivateMessageItem = new ToolStripMenuItem();
+            PrivateMessageItem.Text = "Личное сообщение";
+            PrivateMessageItem.Click += delegate 
+            {
+                if (UserBox.SelectedItems.Count > 0)
+                {
+                    Message.Text = $"@{UserBox.SelectedItem} ";
+                }
+            };
+            UserMenu.Items.Add(PrivateMessageItem);
+            UserBox.ContextMenuStrip = UserMenu;
+        }
+        
+        private void ConnectClick(object sender, EventArgs e)
+        {
+            try
+            {
+                if (!IsConnected)
+                {
+                    client.Connect(IpAddress.Text, int.Parse(Port.Text)); //подключение клиента
+                    stream = client.GetStream(); // получаем поток
+                    IsConnected = !IsConnected;
+                    Invoke((MethodInvoker)delegate
+                    {
+                        PrintMessage($"Подключенно к серверу {IpAddress.Text}:{Port.Text}");
+                        IpAddress.Enabled = !IpAddress.Enabled;
+                        Port.Enabled = !Port.Enabled;
+                    });
+       
+                    // запускаем новый поток для получения данных
+                    Thread receiveThread = new Thread(new ThreadStart(ReceiveMessage));
+                    receiveThread.Start(); //старт потока
+                }
+                SendMessage(UserName.Text);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
 
         private void SendMessage(string message)
         {
@@ -63,57 +114,6 @@ namespace Client
             if (client != null)
                 client.Close();//отключение клиента
             Environment.Exit(0); //завершение процесса
-        }
-
-        public ClientForm()
-        {
-            InitializeComponent();
-            _addMessage = new ChatEvent(PrintMessage);
-            ChatBox.Enabled = true;
-            UserBox.Enabled = false;
-            SendButton.Enabled = false;
-            Message.Enabled = false;
-            client = new TcpClient();
-            UserMenu = new ContextMenuStrip();
-            ToolStripMenuItem PrivateMessageItem = new ToolStripMenuItem();
-            PrivateMessageItem.Text = "Личное сообщение";
-            PrivateMessageItem.Click += delegate 
-            {
-                if (UserBox.SelectedItems.Count > 0)
-                {
-                    Message.Text = $"@{UserBox.SelectedItem} ";
-                }
-            };
-            UserMenu.Items.Add(PrivateMessageItem);
-            UserBox.ContextMenuStrip = UserMenu;
-        }
-
-        private void ConnectClick(object sender, EventArgs e)
-        {
-            try
-            {
-                if (!IsConnected)
-                {
-                    client.Connect(IpAddress.Text, int.Parse(Port.Text)); //подключение клиента
-                    stream = client.GetStream(); // получаем поток
-                    IsConnected = !IsConnected;
-                    Invoke((MethodInvoker)delegate
-                    {
-                        PrintMessage($"Подключенно к серверу {IpAddress.Text}:{Port.Text}");
-                        IpAddress.Enabled = !IpAddress.Enabled;
-                        Port.Enabled = !Port.Enabled;
-                    });
-       
-                    // запускаем новый поток для получения данных
-                    Thread receiveThread = new Thread(new ThreadStart(ReceiveMessage));
-                    receiveThread.Start(); //старт потока
-                }
-                SendMessage(UserName.Text);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
         }
 
         private void Client_Load(object sender, EventArgs e)

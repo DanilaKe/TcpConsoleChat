@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Net;
@@ -13,6 +12,13 @@ namespace ChatServer
     {
         static TcpListener tcpListener; // сервер для прослушивания
         List<ClientObject> clients = new List<ClientObject>(); // все подключения
+        private int _port;
+        public event Action<string> ServerMessage;
+
+        public ServerObject(int port)
+        {
+            _port = port;
+        }
  
         protected internal void AddConnection(ClientObject clientObject)
         {
@@ -33,9 +39,10 @@ namespace ChatServer
         {
             try
             {
-                tcpListener = new TcpListener(IPAddress.Any, 8888);
+                tcpListener = new TcpListener(IPAddress.Any, _port);
                 tcpListener.Start();
-                Console.WriteLine("Сервер запущен. Ожидание подключений...");
+                
+                ServerMessage("Сервер запущен. Ожидание подключений...");
  
                 while (true)
                 {
@@ -48,7 +55,7 @@ namespace ChatServer
             }
             catch(Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                ServerMessage(ex.Message);
                 Disconnect();
             }
         }
@@ -130,6 +137,11 @@ namespace ChatServer
 
             message.Append("|");
             BroadcastMessage(message.ToString());
+        }
+
+        protected internal void PrintMessage(string message)
+        {
+            ServerMessage(message);
         }
     }
 }
