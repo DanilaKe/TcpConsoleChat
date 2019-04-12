@@ -40,7 +40,6 @@ namespace TcpGet
 
         private void Server_FormClosed(object sender, FormClosedEventArgs e)
         {
-            server.Disconnect();
             Environment.Exit(0);
         }
 
